@@ -1,9 +1,10 @@
 library(bio3d)
 wd <- 'Desktop/Protein_analysis/Prep/Du156/'
-in_file <- 'Du156_m9_prep.pdb'
-out_file <- 'm9_link_info.txt'
-glyc_type <- 11 # m8: 8+2=10 m9: 9+2=11
-PNGS_failed <- read.table('Desktop/Protein_analysis/Wiggler/Du156/nosolution_m9.txt', header = T)
+in_file <- 'Du156_m8_prep.pdb'
+out_file <- 'm8_link_info.txt'
+glyc_type <- 10 # m8: 8+2=10 m9: 9+2=11
+cut_off <- 2
+PNGS_failed <- read.table('Desktop/Protein_analysis/Wiggler/Du156/nosolution_m8.txt', header = T)
 
 pdb <- read.pdb(paste(wd, in_file, sep =''))
 atom <- pdb[['atom']]
@@ -58,7 +59,15 @@ for (i in 1:n_glyc)
   a <- apply(hetatoms[,2:4], 1, function(x) sqrt(sum((x-ref)^2)))
   dist_to_ref <- data.frame(site = hetatoms[,1],dist = a)
   min_dist <- which.min(dist_to_ref$dist)
-  links[i,] <- c(Linkto[i,1], 'ND2', dist_to_ref$site[min_dist], 'C1')
+  if (dist_to_ref$dist[min_dist] < cut_off)
+  {
+    links[i,] <- c(Linkto[i,2], 'ND2', dist_to_ref$site[min_dist], 'C1')
+  }
+  else
+  {
+    warning(paste('Check if residue', Linkto[i,1], 'is really glycosylated.',
+                  'If it is set the cutoff value higher'))
+  }
 }
 
 write.table(links, paste(wd, out_file, sep =''), quote = F, row.names = F, col.names = F, append = T)
