@@ -61,7 +61,7 @@ for (i in 1:n_glyc)
   min_dist <- which.min(dist_to_ref$dist)
   if (dist_to_ref$dist[min_dist] < cut_off)
   {
-    links[i,] <- c(Linkto[i,2], 'ND2', dist_to_ref$site[min_dist], 'C1')
+    links[i,] <- c(Linkto[i,1], 'ND2', dist_to_ref$site[min_dist], 'C1')
   }
   else
   {
