@@ -2,7 +2,6 @@ library(bio3d)
 wd <- 'Desktop/Protein_analysis/Prep/Du156/'
 in_file <- 'Du156_m9.pdb'
 out_file <- 'Du156_m9_prep.pdb'
-gly_len <- 129 - 3 #atom length - start m8: 118 m9: 129
 
 pdb <- read.pdb(paste(wd, in_file, sep =''))
 atom <- pdb[['atom']]
@@ -10,32 +9,42 @@ atom$resid[atom$resid=="HIS"] <- "HIE"
 atom$resid[atom$resid=="CYS"] <- "CYX"
 atom$resid[atom$resid=="OFA"] <- "OfA"
 
-p_end <- max(as.numeric(row.names(atom[atom$elety == "OXT",])))
-hetatoms <- atom[atom$eleno == 3 & atom$elety == "C1",c('resno','x','y','z')]
-n_glyc <- dim(hetatoms)[1]
-
-protein_xyz <- c(matrix(c(atom$x[1:p_end],atom$y[1:p_end],atom$z[1:p_end]),nrow = 3, byrow = TRUE))
-write.pdb(file = paste(wd, out_file, sep =''), xyz = protein_xyz, 
-          resno = atom$resno[1:p_end], 
-          resid = atom$resid[1:p_end], 
-          eleno = atom$eleno[1:p_end], 
-          elety = atom$elety[1:p_end],
-          end = FALSE)
-
-het_e <- p_end
-for (i in 1:n_glyc)
+p_start <- 1
+p_end <- atom$resno[atom$elety == "OXT"]
+n_chain <- length(p_end)
+for (i in 1:n_chain)
 {
-  het_s <- het_e + 1
-  het_e <- het_s + gly_len
-  hetatm <- c(matrix(c(atom$x[het_s:het_e],
-                       atom$y[het_s:het_e],atom$z[het_s:het_e]), 
-                     nrow = 3, byrow = TRUE))
-  write.pdb(file = paste(wd, out_file, sep =''), 
-            xyz = hetatm, type = "ATOM", 
-            resno = atom$resno[het_s:het_e], 
-            resid = atom$resid[het_s:het_e], 
-            eleno = atom$eleno[het_s:het_e], 
-            elety = atom$elety[het_s:het_e], 
-            append = TRUE, chainter = TRUE, end = FALSE)
+  small_protein <- atom[atom$resno >= p_start & atom$resno <= p_end[i],]
+  atm <- c(matrix(c(small_protein$x,
+                    small_protein$y,
+                    small_protein$z),
+                  nrow = 3, byrow = TRUE))
+  write.pdb(file = paste(wd, out_file, sep =''),
+            xyz = atm, type = "ATOM", 
+            resno = small_protein$resno, 
+            resid = small_protein$resid, 
+            eleno = small_protein$eleno,
+            elety = small_protein$elety, 
+            append = TRUE, chainter = TRUE, end = FALSE)  
+  p_start <- p_end[i] + 1
 }
 
+hetatoms <- atom[atom$resno >= p_start,]
+het_res <- unique(hetatoms$resno)
+n_het <- length(het_res)
+
+for (i in 1:n_het)
+{
+  small_glycan <- atom[atom$resno == het_res[i],]
+  hetatm <- c(matrix(c(small_glycan$x,
+                       small_glycan$y,
+                       small_glycan$z),
+                     nrow = 3, byrow = TRUE))
+  write.pdb(file = paste(wd, out_file, sep =''),
+            xyz = hetatm, type = "ATOM", 
+            resno = small_glycan$resno, 
+            resid = small_glycan$resid, 
+            eleno = small_glycan$eleno,
+            elety = small_glycan$elety, 
+            append = TRUE, chainter = TRUE, end = FALSE)  
+}
