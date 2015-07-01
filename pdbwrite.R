@@ -2,6 +2,8 @@ library(bio3d)
 wd <- 'Desktop/Protein_analysis/Prep/Du156/'
 in_file <- 'Du156_m9.pdb'
 out_file <- 'Du156_m9_prep.pdb'
+p_end <- c()
+
 
 pdb <- read.pdb(paste(wd, in_file, sep =''))
 atom <- pdb[['atom']]
@@ -9,8 +11,19 @@ atom$resid[atom$resid=="HIS"] <- "HIE"
 atom$resid[atom$resid=="CYS"] <- "CYX"
 atom$resid[atom$resid=="OFA"] <- "OfA"
 
-p_start <- 1
-p_end <- atom$resno[atom$elety == "OXT"]
+p_start <- min(atom$resno)
+
+if (length(p_end) == 0)
+{
+  p_end <- atom$resno[atom$elety == "OXT"]
+  if(length(p_end) == 0)
+  {
+    stop('p_end is missing, with no default')
+  }
+}
+
+p_end <- p_end[order(p_end)]
+
 n_chain <- length(p_end)
 for (i in 1:n_chain)
 {
@@ -30,6 +43,7 @@ for (i in 1:n_chain)
 }
 
 hetatoms <- atom[atom$resno >= p_start,]
+
 het_res <- unique(hetatoms$resno)
 n_het <- length(het_res)
 
