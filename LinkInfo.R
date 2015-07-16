@@ -1,17 +1,17 @@
 library(bio3d)
 wd <- 'Desktop/Protein_analysis/Prep/Du156/'
-in_file <- 'Du156_m8_prep.pdb'
-out_file <- 'm8_link_info.txt'
-glyc_type <- 10 # m8: 8+2=10 m9: 9+2=11
+in_file <- 'Du156_m9_prep.pdb'
+out_file <- 'm9_link_info.txt'
+glyc_type <- 11 # m8: 8+2=10 m9: 9+2=11
 cut_off <- 2
-PNGS_failed <- read.table('Desktop/Protein_analysis/Wiggler/Du156/nosolution_m8.txt', header = T)
+PNGS_failed <- read.table('Desktop/Protein_analysis/Wiggler/Du156/nosolution_m9.txt', header = T)
 
 pdb <- read.pdb(paste(wd, in_file, sep =''))
 atom <- pdb[['atom']]
 
 hetatoms <- atom[atom$eleno == 3 & atom$elety == "C1", c('resno','x','y','z')]
 n_glyc <- dim(hetatoms)[1]
-dat_dim <- (glyc_type - 2)*n_glyc
+dat_dim <- (glyc_type - 1)*n_glyc
 
 het_to_het_links <- data.frame(fresno = numeric(dat_dim), 
                                felety = character(dat_dim),
@@ -27,9 +27,9 @@ for (i in 1:n_glyc)
     het_to_het_links[i + 3*n_glyc,] <- c(hetatoms$resno[i] + 2, 'O3', hetatoms$resno[i] + 7, 'C1')
     het_to_het_links[i + 4*n_glyc,] <- c( hetatoms$resno[i] + 7, 'O2', hetatoms$resno[i] + 8, 'C1')
     het_to_het_links[i + 5*n_glyc,] <- c(hetatoms$resno[i] + 8, 'O2', hetatoms$resno[i] + 9, 'C1')
-    het_to_het_links[i + 5*n_glyc,] <- c(hetatoms$resno[i] + 3, 'O6', hetatoms$resno[i] + 4, 'C1')
-    het_to_het_links[i + 6*n_glyc,] <- c(hetatoms$resno[i] + 3, 'O3', hetatoms$resno[i] + 6, 'C1')
-    het_to_het_links[i + 7*n_glyc,] <- c(hetatoms$resno[i] + 4, 'O2', hetatoms$resno[i] + 5, 'C1') 
+    het_to_het_links[i + 6*n_glyc,] <- c(hetatoms$resno[i] + 3, 'O6', hetatoms$resno[i] + 4, 'C1')
+    het_to_het_links[i + 7*n_glyc,] <- c(hetatoms$resno[i] + 3, 'O3', hetatoms$resno[i] + 6, 'C1')
+    het_to_het_links[i + 8*n_glyc,] <- c(hetatoms$resno[i] + 4, 'O2', hetatoms$resno[i] + 5, 'C1') 
   }
   if (glyc_type == 11)
   {
