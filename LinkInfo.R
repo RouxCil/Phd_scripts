@@ -1,10 +1,11 @@
 library(bio3d)
-wd <- 'Desktop/Protein_analysis/Prep/Du156/'
-in_file <- 'Du156_m9_prep.pdb'
-out_file <- 'm9_link_info.txt'
-glyc_type <- 11 # m8: 8+2=10 m9: 9+2=11
+wd <- 'Downloads/man8_trimer_prep.pdb'
+in_file <- ''
+out_file <- 'test.txt'
+glyc_type <- 10 # m8: 8+2=10 m9: 9+2=11
 cut_off <- 2
-PNGS_failed <- read.table('Desktop/Protein_analysis/Wiggler/Du156/nosolution_m9.txt', header = T)
+PNGS_failed <- data.frame(SITE = c())
+  #read.table('Desktop/Protein_analysis/Wiggler/Du156/nosolution_m9.txt', header = T)
 
 pdb <- read.pdb(paste(wd, in_file, sep =''))
 atom <- pdb[['atom']]
@@ -53,6 +54,10 @@ Linkto <- atom[atom$elety == "ND2" &
                  !(atom$resno %in% PNGS_failed$SITE), c('resno','x','y','z')]
 links <- data.frame(resno = numeric(n_glyc), elety = character(n_glyc), 
                     hetresno = numeric(n_glyc), hetelety = character(n_glyc), stringsAsFactors = F)
+if (length(Linkto)[1] != dim(hetatoms)[1]) 
+{
+  stop('The number of glycans and the number of NLNs do not match.')
+}
 for (i in 1:n_glyc)
 {
   ref <- Linkto[i,2:4]
