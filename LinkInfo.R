@@ -1,5 +1,5 @@
 
-link_info <- function(in_file, out_file, cut_off = 2, return_d = F){
+link_info <- function(in_file, out_file, cut_off = 2, return_d = F, NLN_elety = "ND2"){
   require(bio3d)
   
   # Read in pdb and extract data frame -----------------------------------------------------------
@@ -15,17 +15,20 @@ link_info <- function(in_file, out_file, cut_off = 2, return_d = F){
                        sresno = numeric(),
                        selety = character(), stringsAsFactors = F)
   
-  for (i in 1:(dim(CYX)[1]/2))
+  if (nrow(CYX) != 0)
   {
-    ref <- CYX[1,2:4]
-    a <- apply(CYX[-1,2:4], 1, function(x) sqrt(sum((x-ref)^2)))
-    dist_to_ref <- data.frame(site = CYX[-1,1],dist = a)
-    min_dist <- which.min(dist_to_ref$dist)
-    if (dist_to_ref$dist[min_dist] < 3)
+    for (i in 1:(dim(CYX)[1]/2))
     {
-      ssbond[i,] <- c(CYX[1,1], 'SG', dist_to_ref$site[min_dist], 'SG')
-      CYX <- CYX[-c(1, min_dist + 1),]
-    }
+      ref <- CYX[1,2:4]
+      a <- apply(CYX[-1,2:4], 1, function(x) sqrt(sum((x-ref)^2)))
+      dist_to_ref <- data.frame(site = CYX[-1,1],dist = a)
+      min_dist <- which.min(dist_to_ref$dist)
+      if (dist_to_ref$dist[min_dist] < 3)
+      {
+        ssbond[i,] <- c(CYX[1,1], 'SG', dist_to_ref$site[min_dist], 'SG')
+        CYX <- CYX[-c(1, min_dist + 1),]
+      }
+    } 
   }
   
   # Find the first residue of each glycan -------------------------------------------------------
@@ -54,7 +57,7 @@ link_info <- function(in_file, out_file, cut_off = 2, return_d = F){
   }
   
   # Find NLN residues
-  Linkto <- atom[atom$elety == "ND2" & 
+  Linkto <- atom[atom$elety == NLN_elety & 
                    atom$resid == "NLN", 
                  c('resno','x','y','z')]
   
